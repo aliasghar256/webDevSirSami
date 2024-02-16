@@ -10,6 +10,11 @@ const favoritesSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    judgment_ID: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Judgment',
+        required: true
+    },
     createdAt: {
         type: Date,
         default: Date.now

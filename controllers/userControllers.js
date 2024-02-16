@@ -48,7 +48,7 @@ const login = async (req, res) => {
 
         //Create JWT token
         payload = { email: userInstance.email, id: userInstance._id }
-        const token = jwt.sign(payload, secretKey, { expiresIn: '1h' })
+        const token = jwt.sign(payload, secretKey, { expiresIn: '1d' })
 
         return res.status(200).json({ token: token })
 
