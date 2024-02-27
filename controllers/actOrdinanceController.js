@@ -71,6 +71,8 @@ const removeJudgmentFromActOrdinance = async (req, res) => {
 
         //Retrieve Judgment_IDs
         let judgment_Ids = await judgmentmodel.find({ JudgmentID: JudgmentIDs })
+        if (!judgment_Ids) return res.status(404).json({ error: 'Judgment_IDs not found' })
+
         judgment_Ids = judgment_Ids.map(judgment => judgment._id)
 
         // Remove specified JudgmentIDs from the Act/Ordinance
