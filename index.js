@@ -1,8 +1,9 @@
 const express = require('express')
 const mainRouter = require('./routers/mainRouter')
 const mongoose = require('mongoose')
-const port = 3000
+const port = 3001
 const app = express()
+const cors = require('cors')
 mongoose.connect("mongodb://localhost:27017/PakistanLawLibraryDBTesting")
     .then(() => {
         console.log('DB Connected successfully.')
@@ -17,6 +18,7 @@ app.use((req, res, next) => {
     next()
 })
 app.use(express.json())
+app.use(cors())
 app.get('/', (req, res) => {
     res.send('Hello World')
 })

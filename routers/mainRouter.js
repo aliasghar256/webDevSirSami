@@ -5,12 +5,11 @@ const judgmentRouter = require('./judgmentRouter')
 const favoritesRouter = require('./favoritesRouter')
 const searchLogRouter = require('./searchLogRouter')
 const actOrdinanceRouter = require('./actOrdinanceRouter')
-const elasticSearchRouter = require('./elasticSearchRouter')
 const mainRouter = express.Router()
 
 mainRouter.use('/user', userRouter)
 mainRouter.use('/actordinance', actOrdinanceRouter)
-mainRouter.use('/elasticsearch', elasticSearchRouter)
+//mainRouter.use('/elasticsearch', elasticSearchRouter)
 //Middleware Added for all the routes after /judgment
 mainRouter.use(authenticateToken)
 mainRouter.use('/judgment', judgmentRouter)

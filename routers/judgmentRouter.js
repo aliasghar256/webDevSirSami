@@ -1,5 +1,5 @@
 const express = require('express')
-const { judgmentIdSearch, judgmentValueSearch } = require('../controllers/judgmentController')
+const { judgmentIdSearch, judgmentValueSearch,basicSearch } = require('../controllers/judgmentController')
 const { addToLog } = require('../controllers/searchLogController')
 judgmentRouter = express.Router()
 
@@ -8,6 +8,7 @@ judgmentRouter = express.Router()
 judgmentRouter.use(addToLog)
 judgmentRouter.get('/searchID', judgmentIdSearch)
 judgmentRouter.get('/searchValue', judgmentValueSearch)
+judgmentRouter.get('/basicSearch', basicSearch)
 
 
 module.exports = judgmentRouter

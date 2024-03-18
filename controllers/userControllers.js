@@ -50,7 +50,7 @@ const login = async (req, res) => {
         payload = { email: userInstance.email, id: userInstance._id }
         const token = jwt.sign(payload, secretKey, { expiresIn: '1d' })
 
-        return res.status(200).json({ token: token })
+        return res.status(200).json({ Message:{ token: token } })
 
     } catch (error) {
         return res.status(500).json({ message: "Error! " + error.message })
