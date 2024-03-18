@@ -27,6 +27,7 @@ const judgmentValueSearch = async (req, res) => {
 }
 
 const basicSearch = async (req, res) => {
+   // return res.status(200).json({ message: "Basic Search" })
     try {
       // Extract query parameters for basic search, pagination, and sorting
       const { searchTerm, page = 1, limit = 10, sortBy = 'JudgmentID', sortOrder = 'asc' } = req.query;
@@ -35,6 +36,7 @@ const basicSearch = async (req, res) => {
   
       // Build a query object based on the search term
       const query = { $text: { $search: searchTerm } };
+      //const query = await judgmentmodel.find({ JudgmentText: searchValue })
   
       // Sanitize and validate sorting criteria (important for security)
       const validSortFields = ['JudgmentID', 'CaseYear', /* Add other allowed fields */];
@@ -77,4 +79,4 @@ const basicSearch = async (req, res) => {
     }
   };
 
-module.exports = { judgmentIdSearch, judgmentValueSearch,basicSearch }
+module.exports = { judgmentIdSearch, judgmentValueSearch, basicSearch }
