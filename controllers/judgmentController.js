@@ -28,19 +28,22 @@ const judgmentValueSearch = async (req, res) => {
 
 const caseYearSearch = async (req, res) => {
   try {
-    const year = Number(req.query.searchValue);
+    const year = Number(req.headers.searchValue);
     const options = {
-      page: parseInt(req.query.page) || 1, // Default page to 1
-      limit: parseInt(req.query.limit) || 10, // Default limit to 10
-      sort: { CaseYear: 1 }, // Sort by CaseYear ascending
+      page: parseInt(req.query.page) || 1,
+      limit: parseInt(req.query.limit) || 10,
+      sort: { CaseYear: 1 },
     };
 
     const judgments = await judgmentmodel.paginate({ CaseYear: year }, options);
-    return res.status(200).json(judgments);
+    const totalPages = Math.ceil(judgments.totalDocs / options.limit);
+
+    return res.status(200).json({ ...judgments, totalPages });
   } catch (error) {
     return res.status(500).json({ message: "Error! " + error.message });
   }
 };
+
 
 
 const basicSearch = async (req, res) => {
