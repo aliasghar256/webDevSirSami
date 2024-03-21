@@ -1,5 +1,5 @@
 const express = require('express')
-const { judgmentIdSearch, judgmentValueSearch,basicSearch } = require('../controllers/judgmentController')
+const { judgmentIdSearch, judgmentValueSearch,basicSearch, caseYearSearch } = require('../controllers/judgmentController')
 const { addToLog } = require('../controllers/searchLogController')
 judgmentRouter = express.Router()
 
@@ -8,6 +8,7 @@ judgmentRouter = express.Router()
 //Addto logissue to be patched.
 judgmentRouter.get('/basicSearch', basicSearch)
 judgmentRouter.use(addToLog)
+judgmentRouter.get('/caseYearSearch', caseYearSearch)
 judgmentRouter.get('/searchID', judgmentIdSearch)
 judgmentRouter.get('/searchValue', judgmentValueSearch)
 
