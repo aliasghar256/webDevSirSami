@@ -44,59 +44,109 @@ const caseYearSearch = async (req, res) => {
   }
 };
 
+const partySearch = async (req, res) => {
+  try {
+    const searchValue = req.query.searchValue;
+    const query = {
+      $or: [
+        { Party1: { $regex: searchValue, $options: 'i' } },
+        { Party2: { $regex: searchValue, $options: 'i' } },
+      ],
+    };
+    const options = {
+      page: parseInt(req.query.page) || 1,
+      limit: parseInt(req.query.limit) || 10,
+    };
+
+    const judgments = await judgmentmodel.paginate(query, options);
+    const totalPages = Math.ceil(judgments.totalDocs / options.limit);
+
+    return res.status(200).json({ ...judgments, totalPages });
+  } catch (error) {
+    return res.status(500).json({ message: "Error! " + error.message });
+  }
+};
+
+const benchSearch = async (req, res) => {
+  try {
+    const searchValue = req.query.searchValue;
+    const query = { Bench: { $regex: searchValue, $options: 'i' } }; // Case-insensitive search
+    const options = {
+      page: parseInt(req.query.page) || 1,
+      limit: parseInt(req.query.limit) || 10,
+    };
+
+    const judgments = await judgmentmodel.paginate(query, options);
+    const totalPages = Math.ceil(judgments.totalDocs / options.limit);
+
+    return res.status(200).json({ ...judgments, totalPages });
+  } catch (error) {
+    return res.status(500).json({ message: "Error! " + error.message });
+  }
+};
+
+const caseNoSearch = async (req, res) => {
+  try {
+    const searchValue = req.query.searchValue;
+    const query = { CaseNo: { $regex: searchValue, $options: 'i' } }; // Case-insensitive search
+    const options = {
+      page: parseInt(req.query.page) || 1,
+      limit: parseInt(req.query.limit) || 10,
+    };
+
+    const judgments = await judgmentmodel.paginate(query, options);
+    const totalPages = Math.ceil(judgments.totalDocs / options.limit);
+
+    return res.status(200).json({ ...judgments, totalPages });
+  } catch (error) {
+    return res.status(500).json({ message: "Error! " + error.message });
+  }
+};
+
+const judgeIdSearch = async (req, res) => {
+  try {
+    const id = Number(req.query.searchValue);
+    const query = { JudgeID: id };
+    const options = {
+      page: parseInt(req.query.page) || 1,
+      limit: parseInt(req.query.limit) || 10,
+    };
+
+    const judgments = await judgmentmodel.paginate(query, options);
+    const totalPages = Math.ceil(judgments.totalDocs / options.limit);
+
+    return res.status(200).json({ ...judgments, totalPages });
+  } catch (error) {
+    return res.status(500).json({ message: "Error! " + error.message });
+  }
+};
 
 
-const basicSearch = async (req, res) => {
-   // return res.status(200).json({ message: "Basic Search" })
-    try {
-      // Extract query parameters for basic search, pagination, and sorting
-      const { searchTerm, page = 1, limit = 10, sortBy = 'JudgmentID', sortOrder = 'asc' } = req.query;
-  
-      // Optional: Validate searchTerm, sortBy, and sortOrder (if necessary)
-  
-      // Build a query object based on the search term
-      const query = { $text: { $search: searchTerm } };
-      //const query = await judgmentmodel.find({ JudgmentText: searchValue })
-  
-      // Sanitize and validate sorting criteria (important for security)
-      const validSortFields = ['JudgmentID', 'CaseYear', /* Add other allowed fields */];
-      const validSortOrders = ['asc', 'desc'];
-  
-      if (!validSortFields.includes(sortBy)) {
-        return res.status(400).json({ message: 'Invalid sort field provided' });
+const judgementMultiSearch = async (req, res) => {
+  try {
+    const { searchValue, ...filters } = req.query; // Destructure query params
+
+    // Build the query object based on provided filters
+    const query = {};
+    for (const key in filters) {
+      if (filters[key]) { // Check if filter value exists
+        query[key] = { $regex: searchValue || '', $options: 'i' }; // Case-insensitive search
       }
-  
-      if (!validSortOrders.includes(sortOrder)) {
-        return res.status(400).json({ message: 'Invalid sort order provided' });
-      }
-  
-      // Create sort object based on sanitized parameters
-      const sort = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
-  
-      // Pagination options
-      const options = {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        sort,
-      };
-  
-      // Execute the paginated search using Mongoose's find() with pagination options
-      const judgments = await judgmentmodel.find(query, null, options);
-      const total = await judgmentmodel.countDocuments(query);
-  
-      // Return the search results with pagination information
-      return res.json({
-        judgments,
-        pagination: {
-          total,
-          page: options.page,
-          limit: options.limit,
-          totalPages: Math.ceil(total / options.limit),
-        },
-      });
-    } catch (error) {
-      return res.status(500).json({ message: 'Error occurred during search' });
     }
-  };
 
-module.exports = { judgmentIdSearch, judgmentValueSearch, basicSearch, caseYearSearch}
+    const options = {
+      page: parseInt(req.query.page) || 1,
+      limit: parseInt(req.query.limit) || 10,
+    };
+
+    const judgments = await judgmentmodel.paginate(query, options);
+    const totalPages = Math.ceil(judgments.totalDocs / options.limit);
+
+    return res.status(200).json({ ...judgments, totalPages });
+  } catch (error) {
+    return res.status(500).json({ message: "Error! " + error.message });
+  }
+};
+
+
+module.exports = { judgmentIdSearch, judgmentValueSearch, caseYearSearch, partySearch, caseNoSearch, benchSearch, judgeIdSearch, judgementMultiSearch}
