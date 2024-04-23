@@ -12,8 +12,8 @@ judgmentRouter.get('/caseNoSearch', caseNoSearch)
 judgmentRouter.get('/benchSearch', benchSearch)
 judgmentRouter.get('/judgeIdSearch', judgeIdSearch)
 judgmentRouter.get('/judgementMultiSearch', judgementMultiSearch)
-judgmentRouter.use(addToLog)
-judgmentRouter.get('/searchID', judgmentIdSearch)
+// judgmentRouter.use(addToLog)
+judgmentRouter.get('/searchbyid', judgmentIdSearch)
 judgmentRouter.get('/searchValue', judgmentValueSearch)
 
 

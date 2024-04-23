@@ -3,7 +3,7 @@ const judgmentmodel = require('../models/judgmentModel')
 
 const judgmentIdSearch = async (req, res) => {
     try {
-        const id = Number(req.headers.searchvalue)
+        const id = Number(req.query.JudgmentID)
         const judgmentFound = await judgmentmodel.findOne({ JudgmentID: id })
         if (judgmentFound) return res.status(200).json({ Message: "Judgment Found", judgment: judgmentFound })
 
@@ -15,16 +15,60 @@ const judgmentIdSearch = async (req, res) => {
 }
 
 const judgmentValueSearch = async (req, res) => {
-    try {
-        const searchValue = req.headers.searchvalue
-        const judgmentFound = await judgmentmodel.find({ JudgmentText: searchValue })
-        if (!judgmentFound) return res.status(404).json({ Message: "Error! Judgment not found" })
+  try {
+      // Retrieve the search keyword from the headers
+      const searchValue = req.query.query;
 
-        return res.status(200).json({ Message: "Judgment(s) Found", judgment: judgmentFound })
-    } catch (error) {
-        return res.status(500).json({ message: "Error! " + error.message })
-    }
+      // Use a case-insensitive regex search for broader matching
+      const regex = new RegExp(searchValue, 'gi'); 
+
+      // Find documents where JudgmentText contains the search keyword
+      const judgments = await judgmentmodel.find({ JudgmentText: { $regex: regex } }, 
+          'JudgmentID CaseYear Party1 Party2 JudgeID CaseNo JudgmentText');
+
+      // Check if any judgments were found
+      if (judgments.length === 0) {
+          return res.status(404).json({ Message: "Error! Judgment not found" });
+      }
+
+      // Process each judgment to extract snippets and indexes
+      const results = judgments.map(judgment => {
+          const indexes = [];
+          let match;
+
+          // Find all matches and their indexes
+          while ((match = regex.exec(judgment.JudgmentText)) !== null) {
+              indexes.push(match.index);
+          }
+
+          // Determine snippet extraction
+          const firstIndex = indexes[0];
+          const start = Math.max(0, firstIndex - 120); // Adjust start to not be negative
+          const end = Math.min(judgment.JudgmentText.length, firstIndex + 120 + searchValue.length); // Adjust end to not exceed text length
+
+          const snippet = judgment.JudgmentText.substring(start, end);
+
+          // Return judgment details along with the snippet and indexes
+          return {
+              JudgmentID: judgment.JudgmentID,
+              CaseYear: judgment.CaseYear,
+              Party1: judgment.Party1,
+              Party2: judgment.Party2,
+              JudgeID: judgment.JudgeID,
+              CaseNo: judgment.CaseNo,
+              snippet,
+              indexes
+          };
+      });
+
+      // Return the processed results
+      return res.status(200).json({ Message: "Judgment(s) Found", results });
+  } catch (error) {
+      return res.status(500).json({ message: "Error! " + error.message });
+  }
 }
+
+
 
 const caseYearSearch = async (req, res) => {
   try {
@@ -33,9 +77,21 @@ const caseYearSearch = async (req, res) => {
       page: parseInt(req.query.page) || 1,
       limit: parseInt(req.query.limit) || 10,
       sort: { CaseYear: 1 },
+      select: 'CaseYear -JudgmentText', // Add all fields you want to retrieve here
     };
 
-    const judgments = await judgmentmodel.paginate({ CaseYear: year }, options);
+    // Using aggregate with mongoose-paginate-v2 to trim JudgmentText
+    const aggregate = judgmentmodel.aggregate([
+      { $match: { CaseYear: year } },
+      {
+        $project: {
+          JudgmentTextSnippet: { $substr: ["$JudgmentText", 0, 240] },
+          // include all other fields you want to return here
+        }
+      }
+    ]);
+
+    const judgments = await judgmentmodel.aggregatePaginate(aggregate, options);
     const totalPages = Math.ceil(judgments.totalDocs / options.limit);
 
     return res.status(200).json({ ...judgments, totalPages });
@@ -44,29 +100,46 @@ const caseYearSearch = async (req, res) => {
   }
 };
 
+
 const partySearch = async (req, res) => {
-  
   try {
     const searchValue = req.query.searchValue;
-    const query = {
-      $or: [
-        { Party1: { $regex: searchValue, $options: 'i' } },
-        { Party2: { $regex: searchValue, $options: 'i' } },
-      ],
-    };
     const options = {
       page: parseInt(req.query.page) || 1,
       limit: parseInt(req.query.limit) || 10,
+      // You might want to add other options here
     };
 
-    const judgments = await judgmentmodel.paginate(query, options);
-    const totalPages = Math.ceil(judgments.totalDocs / options.limit);
+    const aggregateQuery = judgmentmodel.aggregate([
+      {
+        $match: {
+          $or: [
+            { Party1: { $regex: searchValue, $options: 'i' } },
+            { Party2: { $regex: searchValue, $options: 'i' } },
+          ],
+        },
+      },
+      {
+        $project: {
+          Party1: 1,
+          Party2: 1,
+          JudgmentTextSnippet: { $substr: ["$JudgmentText", 0, 240] },
+          // include other fields if needed
+        },
+      },
+    ]);
 
-    return res.status(200).json({ ...judgments, totalPages });
+    const result = await judgmentmodel.aggregatePaginate(aggregateQuery, options);
+    const totalPages = Math.ceil(result.totalDocs / options.limit);
+
+    return res.status(200).json({ ...result, totalPages });
   } catch (error) {
     return res.status(500).json({ message: "Error! " + error.message });
   }
 };
+
+
+
 
 const benchSearch = async (req, res) => {
   try {
