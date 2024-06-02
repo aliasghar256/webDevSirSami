@@ -1,6 +1,8 @@
 const express = require('express')
 const judgmentmodel = require('../models/judgmentModel')
 
+//Default search is a Judgment Keyword Search, Alternatively we have ID searches & other search options
+
 const judgmentIdSearch = async (req, res) => {
     try {
         const id = Number(req.query.JudgmentID)
@@ -10,11 +12,74 @@ const judgmentIdSearch = async (req, res) => {
         return res.status(404).json({ Message: "Error! Judgment not found" })
     } catch (error) {
         return res.status(500).json({ message: "Error! " + error.message })
-
     }
 }
 
-const judgmentValueSearch = async (req, res) => {
+const judgmentAdvancedSearch = async (req, res) => {
+  try {
+    const { 
+        keyword, 
+        court, 
+        judgeName, 
+        lawyerName, 
+        appellantOpponent, 
+        section, 
+        actOrdinance, 
+        rule 
+    } = req.query;
+
+    let query = {};
+
+    if (keyword) {
+        query.$or = [
+            { Party1: new RegExp(keyword, 'i') },
+            { Party2: new RegExp(keyword, 'i') },
+            { JudgmentText: new RegExp(keyword, 'i') }
+        ];
+    }
+
+    // if (judgeName) {
+    //     query.JudgeID = judgeName; // Assuming JudgeID refers to judgeName
+    // }
+
+    if (court) {
+        query.Bench = court;
+    }
+
+    // if (lawyerName) {
+    //     query.$or = [
+    //         { Party1: new RegExp(lawyerName, 'i') },
+    //         { Party2: new RegExp(lawyerName, 'i') }
+    //     ];
+    // }
+
+    if (appellantOpponent) {
+        query.$or = [
+            { Party1: new RegExp(appellantOpponent, 'i') },
+            { Party2: new RegExp(appellantOpponent, 'i') }
+        ];
+    }
+
+    if (section) {
+        query.Section = section;
+    }
+
+    if (actOrdinance) {
+        query.ActOrdinance = actOrdinance;
+    }
+
+    if (rule) {
+        query.Rule = rule;
+    }
+
+    const results = await judgmentmodel.find(query).exec();
+    res.json(results);
+} catch (error) {
+    res.status(500).send(error.message);
+}
+}
+
+const judgmentKeywordSearch = async (req, res) => {
   try {
       // Retrieve the search keyword from the headers
       const searchValue = req.query.query;
@@ -223,4 +288,4 @@ const judgementMultiSearch = async (req, res) => {
 };
 
 
-module.exports = { judgmentIdSearch, judgmentValueSearch, caseYearSearch, partySearch, caseNoSearch, benchSearch, judgeIdSearch, judgementMultiSearch}
+module.exports = { judgmentIdSearch, judgmentKeywordSearch, caseYearSearch, partySearch, caseNoSearch, benchSearch, judgeIdSearch, judgementMultiSearch,judgmentAdvancedSearch}
