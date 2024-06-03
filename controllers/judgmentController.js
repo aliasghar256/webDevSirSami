@@ -82,7 +82,7 @@ const judgmentAdvancedSearch = async (req, res) => {
 const judgmentKeywordSearch = async (req, res) => {
   try {
       // Retrieve the search keyword from the headers
-      const searchValue = req.query.query;
+      const searchValue = req.query.keyword;
 
       // Use a case-insensitive regex search for broader matching
       const regex = new RegExp(searchValue, 'gi'); 
