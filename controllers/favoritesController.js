@@ -6,25 +6,32 @@ const judgmentModel = require('../models/judgmentModel')
 //Adding a favorite (CRUD 1)
 const addFavorite = async (req, res) => {
     try {
-        const JudgmentID = req.headers.JudgmentID
-        console.log("Req ",req.headers)
+        const judgmentId = req.headers.judgmentid; // Ensure this matches the header key in your request
 
-        //Already Favorited?
-        let favoriteAdded = await favoritesModel.findOne({ userID: req.userId, judgmentID: JudgmentID })
-        if (favoriteAdded) return res.status(409).json({ Message: "Error! Already Favorited", favorite: favoriteAdded })
-        else {
-            //Retrieve Judgment_ID
-            const judgment = await judgmentModel.findOne({ JudgmentID: JudgmentID })
-            //Create favorite
-            favoriteAdded = await favoritesModel.create({ userID: req.userId, judgmentID: JudgmentID, judgment_ID: judgment._id })
-            if (favoriteAdded) return res.status(200).json({ Message: "Favorite Added", favorite: favoriteAdded })
+        // Already Favorited?
+        let favoriteAdded = await favoritesModel.findOne({ userID: req.userId, judgmentID: judgmentId });
+        if (favoriteAdded) {
+            return res.status(409).json({ Message: "Error! Already Favorited", favorite: favoriteAdded });
+        } else {
+            // Retrieve Judgment_ID
+            const judgment = await judgmentModel.findOne({ JudgmentID: judgmentId });
+            if (!judgment) {
+                return res.status(404).json({ Message: "Error! Judgment not found" });
+            }
+            console.log("Judgment from Fav controller 17", judgment);
+
+            // Create favorite
+            favoriteAdded = await favoritesModel.create({ userID: req.userId, judgmentID: judgmentId, judgment_ID: judgment._id });
+            if (favoriteAdded) {
+                return res.status(200).json({ Message: "Favorite Added", favorite: favoriteAdded });
+            }
         }
-        return res.status(404).json({ Message: "Error! Favorite not added" })
+        return res.status(404).json({ Message: "Error! Favorite not added" });
+    } catch (error) {
+        return res.status(500).json({ message: "Error! " + error.message });
     }
-    catch (error) {
-        return res.status(500).json({ message: "Error! " + error.message })
-    }
-}
+};
+
 
 //Removing a favorite (CRUD 2)
 const deleteFavorite = async (req, res) => {
