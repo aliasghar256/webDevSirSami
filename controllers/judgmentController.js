@@ -79,12 +79,16 @@ const judgmentAdvancedSearch = async (req, res) => {
       appellantOpponent, 
       section, 
       actOrdinance, 
-      rule 
+      rule
     } = req.headers;
+
+    console.log("Keyword",keyword)
+    console.log("Court",court)
+    console.log("JudgeName",judgeName)
 
     let query = {};
 
-    if (keyword) {
+    if (keyword !== "" && keyword !== undefined) {
       query.$or = [
         { Party1: new RegExp(keyword, 'i') },
         { Party2: new RegExp(keyword, 'i') },
@@ -92,46 +96,82 @@ const judgmentAdvancedSearch = async (req, res) => {
       ];
     }
 
-    if (judgeName) {
+    if (judgeName !== "" && judgeName !== undefined) {
       query.JudgeID = judgeName; // Assuming JudgeID refers to judgeName
     }
 
-    if (court) {
+    if (court !== "" && court !== undefined) {
       query.Bench = court;
     }
 
-    if (lawyerName) {
+    if (lawyerName !== "" && lawyerName !== undefined) {
       query.$or = [
         { Lawyer1: new RegExp(lawyerName, 'i') }, // Assuming Lawyer1 is a field in your model
         { Lawyer2: new RegExp(lawyerName, 'i') }  // Assuming Lawyer2 is a field in your model
       ];
     }
 
-    if (appellantOpponent) {
+    if (appellantOpponent !== "" && appellantOpponent !== undefined) {
       query.$or = [
         { Party1: new RegExp(appellantOpponent, 'i') },
         { Party2: new RegExp(appellantOpponent, 'i') }
       ];
     }
 
-    if (section) {
+    if (section !== "" && section !== undefined) {
       query.Section = section;
     }
 
-    if (actOrdinance) {
+    if (actOrdinance !== "" && actOrdinance !== undefined) {
       query.ActOrdinance = actOrdinance;
     }
 
-    if (rule) {
+    if (rule !== "" && rule !== undefined) {
       query.Rule = rule;
     }
 
-    const results = await judgmentmodel.find(query).exec();
-    res.json(results);
+    console.log("Query: ",query);
+
+    const judgments = await judgmentmodel.find(query, 
+      'JudgmentID CaseYear Party1 Party2 JudgeID CaseNo JudgmentText'
+    ).exec();
+
+    if (judgments.length === 0) {
+      return res.status(404).json({ Message: "Error! Judgment not found" });
+    }
+
+    const regex = new RegExp(keyword, 'gi');
+    const results = judgments.map(judgment => {
+      const indexes = [];
+      let match;
+
+      while ((match = regex.exec(judgment.JudgmentText)) !== null) {
+        indexes.push(match.index);
+      }
+
+      const firstIndex = indexes[0];
+      const start = Math.max(0, firstIndex - 120);
+      const end = Math.min(judgment.JudgmentText.length, firstIndex + 120 + keyword.length);
+      const snippet = judgment.JudgmentText.substring(start, end);
+
+      return {
+        JudgmentID: judgment.JudgmentID,
+        CaseYear: judgment.CaseYear,
+        Party1: judgment.Party1,
+        Party2: judgment.Party2,
+        JudgeID: judgment.JudgeID,
+        CaseNo: judgment.CaseNo,
+        snippet,
+        indexes
+      };
+    });
+
+    return res.status(200).json({ Message: "Judgment(s) Found", results });
   } catch (error) {
-    res.status(500).send(error.message);
+    return res.status(500).json({ message: "Error! " + error.message });
   }
 };
+
 
 
 
