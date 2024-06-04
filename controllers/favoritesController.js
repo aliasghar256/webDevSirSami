@@ -6,15 +6,17 @@ const judgmentModel = require('../models/judgmentModel')
 //Adding a favorite (CRUD 1)
 const addFavorite = async (req, res) => {
     try {
-        const judgmentId = req.headers.judgmentid
+        const JudgmentID = req.headers.JudgmentID
+        console.log("Req ",req.headers)
+
         //Already Favorited?
-        let favoriteAdded = await favoritesModel.findOne({ userID: req.userId, judgmentID: judgmentId })
+        let favoriteAdded = await favoritesModel.findOne({ userID: req.userId, judgmentID: JudgmentID })
         if (favoriteAdded) return res.status(409).json({ Message: "Error! Already Favorited", favorite: favoriteAdded })
         else {
             //Retrieve Judgment_ID
-            const judgment = await judgmentModel.findOne({ JudgmentID: judgmentId })
+            const judgment = await judgmentModel.findOne({ JudgmentID: JudgmentID })
             //Create favorite
-            favoriteAdded = await favoritesModel.create({ userID: req.userId, judgmentID: judgmentId, judgment_ID: judgment._id })
+            favoriteAdded = await favoritesModel.create({ userID: req.userId, judgmentID: JudgmentID, judgment_ID: judgment._id })
             if (favoriteAdded) return res.status(200).json({ Message: "Favorite Added", favorite: favoriteAdded })
         }
         return res.status(404).json({ Message: "Error! Favorite not added" })
@@ -26,9 +28,9 @@ const addFavorite = async (req, res) => {
 
 //Removing a favorite (CRUD 2)
 const deleteFavorite = async (req, res) => {
-    const favoriteID = req.headers.favoriteid
+    const JudgmentID = req.headers.JudgmentID
     try {
-        const favoriteInstance = await favoritesModel.findByIdAndDelete({ _id: favoriteID })
+        const favoriteInstance = await favoritesModel.findOneAndDelete({ userID:req.userId,JudgmentID: JudgmentID });
         //const favoriteInstance = await favoritesModel.findOneAndDelete({ userID: req.userId, _id: favoriteID })
         if (favoriteInstance) return res.status(200).json({ Message: "Favorite Deleted", favorite: favoriteInstance })
         else return res.status(404).json({ Message: "Error! Favorite not found" })
