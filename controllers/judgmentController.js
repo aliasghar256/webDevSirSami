@@ -69,70 +69,70 @@ const judgmentKeywordSearch = async (req, res) => {
   }
 }
 
-
 const judgmentAdvancedSearch = async (req, res) => {
   try {
     const { 
-        keyword, 
-        court, 
-        judgeName, 
-        lawyerName, 
-        appellantOpponent, 
-        section, 
-        actOrdinance, 
-        rule 
-    } = req.query;
+      keyword, 
+      court, 
+      judgeName, 
+      lawyerName, 
+      appellantOpponent, 
+      section, 
+      actOrdinance, 
+      rule 
+    } = req.headers;
 
     let query = {};
 
     if (keyword) {
-        query.$or = [
-            { Party1: new RegExp(keyword, 'i') },
-            { Party2: new RegExp(keyword, 'i') },
-            { JudgmentText: new RegExp(keyword, 'i') }
-        ];
+      query.$or = [
+        { Party1: new RegExp(keyword, 'i') },
+        { Party2: new RegExp(keyword, 'i') },
+        { JudgmentText: new RegExp(keyword, 'i') }
+      ];
     }
 
-    // if (judgeName) {
-    //     query.JudgeID = judgeName; // Assuming JudgeID refers to judgeName
-    // }
+    if (judgeName) {
+      query.JudgeID = judgeName; // Assuming JudgeID refers to judgeName
+    }
 
     if (court) {
-        query.Bench = court;
+      query.Bench = court;
     }
 
-    // if (lawyerName) {
-    //     query.$or = [
-    //         { Party1: new RegExp(lawyerName, 'i') },
-    //         { Party2: new RegExp(lawyerName, 'i') }
-    //     ];
-    // }
+    if (lawyerName) {
+      query.$or = [
+        { Lawyer1: new RegExp(lawyerName, 'i') }, // Assuming Lawyer1 is a field in your model
+        { Lawyer2: new RegExp(lawyerName, 'i') }  // Assuming Lawyer2 is a field in your model
+      ];
+    }
 
     if (appellantOpponent) {
-        query.$or = [
-            { Party1: new RegExp(appellantOpponent, 'i') },
-            { Party2: new RegExp(appellantOpponent, 'i') }
-        ];
+      query.$or = [
+        { Party1: new RegExp(appellantOpponent, 'i') },
+        { Party2: new RegExp(appellantOpponent, 'i') }
+      ];
     }
 
     if (section) {
-        query.Section = section;
+      query.Section = section;
     }
 
     if (actOrdinance) {
-        query.ActOrdinance = actOrdinance;
+      query.ActOrdinance = actOrdinance;
     }
 
     if (rule) {
-        query.Rule = rule;
+      query.Rule = rule;
     }
 
     const results = await judgmentmodel.find(query).exec();
     res.json(results);
-} catch (error) {
+  } catch (error) {
     res.status(500).send(error.message);
-}
-}
+  }
+};
+
 
 
 
