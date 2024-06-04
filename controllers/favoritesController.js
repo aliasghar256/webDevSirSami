@@ -40,7 +40,7 @@ const deleteFavorite = async (req, res) => {
 //Viewing all favorites (CRUD 3)
 const viewFavorites = async (req, res) => {
     try {
-        const favorites = await favoritesModel.find({ userID: req.userId })
+        const favorites = await favoritesModel.find({ userID: req.userId }).populate('judgment_ID')
         if (favorites) return res.status(200).json({ Message: "Favorites", favorites: favorites })
         else return res.status(404).json({ Message: "Error! No Favorites Found" })
     } catch (error) {

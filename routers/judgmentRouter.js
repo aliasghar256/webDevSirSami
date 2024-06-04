@@ -8,6 +8,8 @@ judgmentRouter = express.Router()
 //Addto logissue to be patched.
 judgmentRouter.get('/advanced_search',judgmentAdvancedSearch)
 judgmentRouter.get('/keyword_search', judgmentKeywordSearch)
+judgmentRouter.get('/searchbyid', judgmentIdSearch)
+
 judgmentRouter.get('/caseYearSearch', caseYearSearch)
 judgmentRouter.get('/partySearch', partySearch)
 judgmentRouter.get('/caseNoSearch', caseNoSearch)
@@ -15,7 +17,7 @@ judgmentRouter.get('/benchSearch', benchSearch)
 judgmentRouter.get('/judgeIdSearch', judgeIdSearch)
 judgmentRouter.get('/judgementMultiSearch', judgementMultiSearch)
 // judgmentRouter.use(addToLog)
-judgmentRouter.get('/searchbyid', judgmentIdSearch)
+
 
 
 module.exports = judgmentRouter

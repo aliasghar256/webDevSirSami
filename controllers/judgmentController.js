@@ -15,6 +15,61 @@ const judgmentIdSearch = async (req, res) => {
     }
 }
 
+const judgmentKeywordSearch = async (req, res) => {
+  try {
+      // Retrieve the search keyword from the headers
+      const searchValue = req.query.keyword;
+
+      // Use a case-insensitive regex search for broader matching
+      const regex = new RegExp(searchValue, 'gi'); 
+
+      // Find documents where JudgmentText contains the search keyword
+      const judgments = await judgmentmodel.find({ JudgmentText: { $regex: regex } }, 
+          'JudgmentID CaseYear Party1 Party2 JudgeID CaseNo JudgmentText');
+
+      // Check if any judgments were found
+      if (judgments.length === 0) {
+          return res.status(404).json({ Message: "Error! Judgment not found" });
+      }
+
+      // Process each judgment to extract snippets and indexes
+      const results = judgments.map(judgment => {
+          const indexes = [];
+          let match;
+
+          // Find all matches and their indexes
+          while ((match = regex.exec(judgment.JudgmentText)) !== null) {
+              indexes.push(match.index);
+          }
+
+          // Determine snippet extraction
+          const firstIndex = indexes[0];
+          const start = Math.max(0, firstIndex - 120); // Adjust start to not be negative
+          const end = Math.min(judgment.JudgmentText.length, firstIndex + 120 + searchValue.length); // Adjust end to not exceed text length
+
+          const snippet = judgment.JudgmentText.substring(start, end);
+
+          // Return judgment details along with the snippet and indexes
+          return {
+              JudgmentID: judgment.JudgmentID,
+              CaseYear: judgment.CaseYear,
+              Party1: judgment.Party1,
+              Party2: judgment.Party2,
+              JudgeID: judgment.JudgeID,
+              CaseNo: judgment.CaseNo,
+              snippet,
+              indexes
+          };
+      });
+
+      // Return the processed results
+      return res.status(200).json({ Message: "Judgment(s) Found", results });
+  } catch (error) {
+      return res.status(500).json({ message: "Error! " + error.message });
+  }
+}
+
+
 const judgmentAdvancedSearch = async (req, res) => {
   try {
     const { 
@@ -79,59 +134,6 @@ const judgmentAdvancedSearch = async (req, res) => {
 }
 }
 
-const judgmentKeywordSearch = async (req, res) => {
-  try {
-      // Retrieve the search keyword from the headers
-      const searchValue = req.query.keyword;
-
-      // Use a case-insensitive regex search for broader matching
-      const regex = new RegExp(searchValue, 'gi'); 
-
-      // Find documents where JudgmentText contains the search keyword
-      const judgments = await judgmentmodel.find({ JudgmentText: { $regex: regex } }, 
-          'JudgmentID CaseYear Party1 Party2 JudgeID CaseNo JudgmentText');
-
-      // Check if any judgments were found
-      if (judgments.length === 0) {
-          return res.status(404).json({ Message: "Error! Judgment not found" });
-      }
-
-      // Process each judgment to extract snippets and indexes
-      const results = judgments.map(judgment => {
-          const indexes = [];
-          let match;
-
-          // Find all matches and their indexes
-          while ((match = regex.exec(judgment.JudgmentText)) !== null) {
-              indexes.push(match.index);
-          }
-
-          // Determine snippet extraction
-          const firstIndex = indexes[0];
-          const start = Math.max(0, firstIndex - 120); // Adjust start to not be negative
-          const end = Math.min(judgment.JudgmentText.length, firstIndex + 120 + searchValue.length); // Adjust end to not exceed text length
-
-          const snippet = judgment.JudgmentText.substring(start, end);
-
-          // Return judgment details along with the snippet and indexes
-          return {
-              JudgmentID: judgment.JudgmentID,
-              CaseYear: judgment.CaseYear,
-              Party1: judgment.Party1,
-              Party2: judgment.Party2,
-              JudgeID: judgment.JudgeID,
-              CaseNo: judgment.CaseNo,
-              snippet,
-              indexes
-          };
-      });
-
-      // Return the processed results
-      return res.status(200).json({ Message: "Judgment(s) Found", results });
-  } catch (error) {
-      return res.status(500).json({ message: "Error! " + error.message });
-  }
-}
 
 
 
