@@ -6,7 +6,7 @@ const judgmentmodel = require('../models/judgmentModel')
 const judgmentIdSearch = async (req, res) => {
     try {
         const id = Number(req.query.JudgmentID)
-        console.log("Judgment ID from :9 judgController: ", id)
+        // console.log("Judgment ID from :9 judgController: ", id)
         const judgmentFound = await judgmentmodel.findOne({ JudgmentID: id })
         if (judgmentFound) return res.status(200).json({ Message: "Judgment Found", judgment: judgmentFound })
 
@@ -330,5 +330,31 @@ const judgementMultiSearch = async (req, res) => {
   }
 };
 
+const modifyJudgmentText = async (req, res) => {
+  const judgmentid = req.headers.judgmentid;
+  const newtext = req.headers.newtext;
+  console.log("Req Headers: from controller",req.headers)
+  try {
+      // Find the user note with the specified judgmentID and userID
+      const judgment = await judgmentmodel.findOne({ JudgmentID: judgmentid });
+      console.log("judgment: from controller",judgment)
 
-module.exports = { judgmentIdSearch, judgmentKeywordSearch, caseYearSearch, partySearch, caseNoSearch, benchSearch, judgeIdSearch, judgementMultiSearch,judgmentAdvancedSearch}
+      if (!judgment) {
+          return res.status(404).json({ Message: "Error! User note not found" });
+      }
+
+      // Update the text value
+      judgment.JudgmentText = newtext;
+
+      // Save the updated judgment text
+      await judgment.save();
+
+      return res.status(200).json({ Message: "Judgement Modified", judgment: judgment });
+
+  } catch (error) {
+      return res.status(500).json({ message: "Error! " + error.message });
+  }
+};
+
+
+module.exports = { modifyJudgmentText, judgmentIdSearch, judgmentKeywordSearch, caseYearSearch, partySearch, caseNoSearch, benchSearch, judgeIdSearch, judgementMultiSearch,judgmentAdvancedSearch}

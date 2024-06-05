@@ -9,10 +9,15 @@ const addNote = async (req, res) => {
         const judgmentId = req.headers.judgmentid; // Ensure this matches the header key in your request
         const note = req.body.note;
 
-        // Already Favorited?
+        // Already Added?
         let noteAdded = await userNoteModel.findOne({ userID: req.userId, judgmentID: judgmentId });
         if (noteAdded) {
-            return res.status(409).json({ Message: "Error! Note Already Added", note: noteAdded });
+            // Update the note value
+            // console.log("Already ADded, New Notw; ",note)
+            noteAdded.note = note;
+            // Save the updated user note
+            await noteAdded.save();
+            return res.status(200).json({ Message: "Note Modified", userNote: userNote });
         } else {
             // Retrieve Judgment_ID
             const judgment = await judgmentModel.findOne({ JudgmentID: judgmentId });
