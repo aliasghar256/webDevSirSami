@@ -6,10 +6,10 @@ judgmentRouter = express.Router()
 //Add log functiona s middleware function, search functions need elastic search but logs are working
 
 //Addto logissue to be patched.
+judgmentRouter.get('/searchbyid', judgmentIdSearch)
 judgmentRouter.use(addToLog)
 judgmentRouter.get('/advanced_search',judgmentAdvancedSearch)
 judgmentRouter.get('/keyword_search', judgmentKeywordSearch)
-judgmentRouter.get('/searchbyid', judgmentIdSearch)
 
 // judgmentRouter.get('/caseYearSearch', caseYearSearch)
 // judgmentRouter.get('/partySearch', partySearch)

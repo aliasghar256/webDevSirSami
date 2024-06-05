@@ -6,6 +6,7 @@ const judgmentmodel = require('../models/judgmentModel')
 const judgmentIdSearch = async (req, res) => {
     try {
         const id = Number(req.query.JudgmentID)
+        console.log("Judgment ID from :9 judgController: ", id)
         const judgmentFound = await judgmentmodel.findOne({ JudgmentID: id })
         if (judgmentFound) return res.status(200).json({ Message: "Judgment Found", judgment: judgmentFound })
 
