@@ -4,7 +4,7 @@ const searchLogModel = require('../models/searchLogModel')
 //CRUD 1 Create/Add to Log
 const addToLog = async (req, res, next) => {
     try {
-        const searchValue = req.headers.searchvalue
+        const searchValue = req.headers.keyword
         const userID = req.userId
         if (!searchValue) {
             return res.status(400).json({ message: "Error! No search value" })
