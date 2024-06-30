@@ -8,7 +8,7 @@ judgmentRouter = express.Router()
 //Addto logissue to be patched.
 judgmentRouter.get('/searchbyid', judgmentIdSearch)
 judgmentRouter.put('/modifyJudgement', modifyJudgmentText)
-judgmentRouter.use(addToLog)
+// judgmentRouter.use(addToLog)
 judgmentRouter.get('/advanced_search',judgmentAdvancedSearch)
 judgmentRouter.get('/keyword_search', judgmentKeywordSearch)
 

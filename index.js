@@ -14,7 +14,12 @@ mongoose.connect("mongodb://localhost:27017/PakistanLawLibraryDBTesting")
 
 
 app.use((req, res, next) => {
-    console.log('HTTP Method: ', req.method, " URL: ", req.url)
+    const now = new Date();
+
+  // Format the date and time (example: YYYY-MM-DD HH:MM:SS)
+    const formattedDate = now.toISOString().replace('T', ' ').replace(/\..+/, '');
+
+    console.log('HTTP Method: ', req.method, " URL: ", req.url,"Time: ",formattedDate)
     next()
 })
 app.use(express.json())
